@@ -29,8 +29,8 @@ def main():
     )
     logging.info("🛰 arXiv→LLM 翻訳システム 起動（クイックモード）")
 
-    api_key = load_api_key("key.env")
-    days_back, categories, max_results = 1, ["cs.CL"], 100
+    api_key = load_api_key("../key.env")
+    days_back, categories, max_results = 3, ["cs.CL"], 100
     logging.info(f"設定: 過去{days_back}日, カテゴリ{categories}, 最大{max_results}件")
 
     try:
@@ -57,8 +57,8 @@ def main():
 
     translator.display_translated_papers(translated)
 
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    txt_file, json_file = f"arxiv_translated_{ts}.txt", f"arxiv_translated_{ts}.json"
+    ts = datetime.now().strftime("%Y%m%d")
+    txt_file, json_file = f"abs-ja/arxiv_translated_{ts}.txt", f"./meta-data/arxiv_translated_{ts}.json"
     try:
         translator.save_to_file(translated, txt_file)
         translator.save_to_json(translated, json_file)
