@@ -13,7 +13,7 @@ client = WebClient(token=slack_bot_token)
 
 
 ts = datetime.now().strftime("%Y%m%d")
-channel_id = "ChannelID" # 送信先のチャンネルID
+channel_id = "C09L1NCRTLJ" # 送信先のチャンネルID
 file_path = f'../abs-ja/arxiv_translated_{ts}.txt' # 添付したいファイルのパス
 initial_comment = "本日のレポートです！" # ファイルと一緒に送信するメッセージ
  
@@ -28,6 +28,10 @@ try:
     print("ファイルが正常に送信されました。")
 
 except FileNotFoundError:
+    response = client.files_upload_v2(
+        channel=channel_id,
+        initial_comment="昨日は論文が投稿されてないみたい...😢",
+    )
     print(f"エラー: ファイルが見つかりません。パスを確認してください: {file_path}")
 except SlackApiError as e:
     # エラーが発生した場合
