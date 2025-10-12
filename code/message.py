@@ -13,7 +13,7 @@ client = WebClient(token=slack_bot_token)
 
 
 ts = datetime.now().strftime("%Y%m%d")
-channel_id = "C09L1NCRTLJ" # 送信先のチャンネルID
+channel_id = "ChannelID" # 送信先のチャンネルID
 file_path = f'../abs-ja/arxiv_translated_{ts}.txt' # 添付したいファイルのパス
 initial_comment = "本日のレポートです！" # ファイルと一緒に送信するメッセージ
  
