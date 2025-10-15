@@ -30,7 +30,7 @@ def main():
     logging.info("🛰 arXiv→LLM 翻訳システム 起動（クイックモード）")
 
     api_key = load_api_key("../key.env")
-    days_back, categories, max_results = 3, ["cs.CL"], 100
+    days_back, categories, max_results = 1, ["cs.CL"], 100
     logging.info(f"設定: 過去{days_back}日, カテゴリ{categories}, 最大{max_results}件")
 
     try:

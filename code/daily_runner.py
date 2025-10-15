@@ -8,7 +8,7 @@ main.py と message.py を 1 日に 1 度順番に実行する常駐スクリプ
 main.py → message.py の順に実行します。その後も 24 時間ごとに繰り返します。
 
 実行時刻は環境変数 DAILY_RUN_AT（例: "07:30"）で指定できます。
-指定がなければ 09:00 に実行します。
+指定がなければ 10:30 に実行します。
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ def parse_run_time(value: str) -> time_cls:
             raise ValueError
         return time_cls(hour=hour, minute=minute)
     except (ValueError, TypeError):
-        raise ValueError(f"DAILY_RUN_AT の値が不正です: {value!r}（例: '07:30'）")
+        raise ValueError(f"DAILY_RUN_AT の値が不正です: {value!r}")
 
 
 def next_run_datetime(run_at: time_cls, reference: Optional[datetime] = None) -> datetime:
@@ -62,7 +62,7 @@ def main() -> None:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    daily_run_at = os.getenv("DAILY_RUN_AT", "09:00")
+    daily_run_at = os.getenv("DAILY_RUN_AT", "10:20")
     try:
         run_at = parse_run_time(daily_run_at)
     except ValueError as exc:
@@ -81,25 +81,33 @@ def main() -> None:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    next_run = next_run_datetime(run_at)
+    last_executed_date = None
     while True:
         now = datetime.now()
-        wait_seconds = (next_run - now).total_seconds()
+        today = now.date()
 
-        if wait_seconds > 0:
-            logging.info("⏳ 次の実行まで %s 秒待機します（予定時刻: %s）", int(wait_seconds), next_run)
-            time.sleep(wait_seconds)
+        # 今日の実行時刻をdatetimeオブジェクトとして作成 (例: 2025-10-13 10:45:00)
+        run_time_today = datetime.combine(today, run_at)
 
-        try:
-            run_scripts()
-        except subprocess.CalledProcessError as exc:
-            logging.exception("❌ スクリプト実行中にエラーが発生しました: %s", exc)
+        # 【条件変更】
+        # 1. 現在時刻が、今日の実行時刻を過ぎているか？
+        # 2. そして、今日まだ実行していないか？
+        if (now >= run_time_today) and (last_executed_date != today):
+            logging.info("🔔 実行時刻を過ぎており、本日は未実行のためスクリプトを実行します。")
+            try:
+                run_scripts()
+                # 実行が完了したら、今日の日付を記録
+                last_executed_date = today
+                logging.info("✅ 本日のタスクが完了しました。次は明日実行します。")
+            except subprocess.CalledProcessError as exc:
+                logging.exception("❌ スクリプト実行中にエラーが発生しました: %s", exc)
 
         if stop:
             logging.info("👋 終了指示を受けたため停止します。")
             break
 
-        next_run = next_run_datetime(run_at, reference=next_run)
+        # チェック間隔（1分に1回チェックすれば十分です）
+        time.sleep(60)
 
 
 if __name__ == "__main__":
